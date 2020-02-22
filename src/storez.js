@@ -13,11 +13,9 @@ const storez = val => {
 
   return {
     subscribe: subscriptionFn => {
-      console.log("subscribing");
       subscriptions.push(subscriptionFn);
       subscriptionFn(currentValue);
       return () => {
-        console.log("unsubscribing");
         dispose();
         subscriptions.splice(subscriptions.indexOf(subscriptionFn), 1);
       };
