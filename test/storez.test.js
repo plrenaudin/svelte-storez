@@ -125,6 +125,19 @@ describe("'Subscribe' method unit test suite", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
 
+  it("Should work with start/stop function", () => {
+    const stop = jest.fn();
+    const start = jest.fn(() => {
+      return stop;
+    });
+    const store = sut("initialValue", start);
+    const subscription = store.subscribe(() => {});
+    expect(start).toHaveBeenCalledTimes(1);
+    expect(stop).toHaveBeenCalledTimes(0);
+    subscription();
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
   it("Should work with multiple subscriptions", () => {
     const store = sut("initialValue");
     const spy1 = jest.fn();
