@@ -176,3 +176,51 @@ describe("'Subscribe' method unit test suite", () => {
     `);
   });
 });
+
+describe("options localstorage unit test suite", () => {
+  it("reads from localstorage a string", () => {
+    localStorage.setItem("lsKey", "valueFromLS");
+    const store = sut("fallback", { localstorage: { key: "lsKey" } });
+    expect(get(store)).toEqual("valueFromLS");
+  });
+
+  it("reads from localstorage an object", () => {
+    localStorage.setItem("lsKey", JSON.stringify({ value: "test" }));
+    const store = sut("fallback", { localstorage: { key: "lsKey" } });
+    expect(get(store)).toEqual({ value: "test" });
+  });
+
+  it("saves to localstorage as a string", () => {
+    localStorage.clear();
+    const store = sut("value", { localstorage: { key: "lsKey" } });
+
+    expect(localStorage.getItem("lsKey")).toEqual("value");
+    const dispose = store.subscribe(() => {});
+    store.set("anotherVal");
+    // Does not save to localstorage until store is disposed
+    expect(localStorage.getItem("lsKey")).toEqual("value");
+    dispose();
+
+    expect(localStorage.getItem("lsKey")).toEqual("anotherVal");
+  });
+
+  it("saves to localstorage as an object", () => {
+    localStorage.clear();
+    const store = sut({ name: "value" }, { localstorage: { key: "lsKey" } });
+
+    expect(localStorage.getItem("lsKey")).toEqual(
+      JSON.stringify({ name: "value" })
+    );
+    const dispose = store.subscribe(() => {});
+    store.set({ name: "anotherVal" });
+    // Does not save to localstorage until store is disposed
+    expect(localStorage.getItem("lsKey")).toEqual(
+      JSON.stringify({ name: "value" })
+    );
+    dispose();
+
+    expect(localStorage.getItem("lsKey")).toEqual(
+      JSON.stringify({ name: "anotherVal" })
+    );
+  });
+});

@@ -1,4 +1,5 @@
 import { writable } from "svelte/store";
+import { readLocalStorage, localStorageSerializer } from "./utils";
 
 /**
  * Svelte compatible store type
@@ -7,10 +8,16 @@ import { writable } from "svelte/store";
  * @property {function} set Set function
  * @property {function} update Update function
  *
+ * @typedef {Object} Options
+ * @property {LocalStorageOptions} localstorage localstorage options
+ *
+ * @typedef {Object} LocalStorageOptions
+ * @property {string} key Key used for the local storage
+ *
  * @typedef {(val: any) => SvelteCompatibleStore} Simple
  * @typedef {(val: any, start:function) => SvelteCompatibleStore} Compatible
- * @typedef {(val: any, options:any) => SvelteCompatibleStore} SimpleExtended
- * @typedef {(val: any, start:function, options: any) => SvelteCompatibleStore} CompatibleExtended
+ * @typedef {(val: any, options:Options) => SvelteCompatibleStore} SimpleExtended
+ * @typedef {(val: any, start:function, options: Options) => SvelteCompatibleStore} CompatibleExtended
  *
  * @typedef {Simple & Compatible & SimpleExtended & CompatibleExtended} MethodArgument
  */
@@ -39,12 +46,24 @@ const storez = (...args) => {
   return storezImpl(val, start, options);
 };
 
-const storezImpl = (val, start) => {
+const storezImpl = (val, start, options) => {
   let oldValue;
   let currentValue;
   const subscriptions = [];
 
-  const valueStore = writable(val, start);
+  let initialValue = val;
+
+  if (options.localstorage) {
+    initialValue = readLocalStorage(options.localstorage.key);
+    if (!initialValue) {
+      localStorage.setItem(
+        options.localstorage.key,
+        localStorageSerializer.to(val)
+      );
+    }
+  }
+
+  const valueStore = writable(initialValue, start);
 
   const dispose = valueStore.subscribe(newVal => {
     oldValue = currentValue;
@@ -61,6 +80,12 @@ const storezImpl = (val, start) => {
           subscriptions.splice(index, 1);
         }
         if (subscriptions.length === 0) {
+          if (options.localstorage) {
+            localStorage.setItem(
+              options.localstorage.key,
+              localStorageSerializer.to(currentValue)
+            );
+          }
           dispose();
         }
       };
