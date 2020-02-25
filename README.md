@@ -4,6 +4,7 @@
 
 - Fully compatible with svelte writable store
 - Subscriber function receives the new and the old value
+- Read and persist value to localstorage
 
 ## Usage example
 
@@ -19,4 +20,22 @@ const dispose = myStore.subscribe((newVal, oldVal) => {
 });
 
 myStore.set("changed value"); // console output: 'my value' has been changed to 'changed value'
+```
+
+### With localStorage
+
+```js
+import storez from "svelte-storez";
+
+const myStore = storez("my value", { localstorage: { key: "myPersistedStore" } });
+
+const dispose = myStore.subscribe(() => {...});
+
+myStore.set("changed value");
+
+localstorage.getItem("myPersistedStore") // === "my value"
+
+dispose(); // persist in localStorage
+
+localstorage.getItem("myPersistedStore") // === "changed value"
 ```
