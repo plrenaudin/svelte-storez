@@ -1,7 +1,7 @@
 {
   "name": "storez",
   "version": "0.1.0",
-  "description": "",
+  "description": "Svelte writable store with more.",
   "main": "storez.js",
   "scripts": {
     "pretest": "npm run lint",
@@ -11,8 +11,12 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["storez", "svelte", "store", "writable store"],
+  "author": "Pierre-Louis Renaudin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plrenaudin/svelte-storez"
+  },
   "license": "ISC",
   "dependencies": {
     "svelte": "^3.18.2"
