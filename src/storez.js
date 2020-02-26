@@ -1,5 +1,6 @@
 import { writable } from "svelte/store";
-import { readLocalStorage, localStorageSerializer } from "./utils";
+import localstorageHook from "./withLocalstorage";
+import historyHook from "./withHistory";
 
 /**
  * Svelte compatible store type
@@ -10,9 +11,13 @@ import { readLocalStorage, localStorageSerializer } from "./utils";
  *
  * @typedef {Object} Options
  * @property {LocalStorageOptions} localstorage localstorage options
+ * @property {HistoryOptions} history history options
  *
  * @typedef {Object} LocalStorageOptions
  * @property {string} key Key used for the local storage
+ *
+ * @typedef {Object} HistoryOptions
+ * @property {Number} size Number of mutations to keep in history
  *
  * @typedef {(val: any) => SvelteCompatibleStore} Simple
  * @typedef {(val: any, start:function) => SvelteCompatibleStore} Compatible
@@ -48,27 +53,30 @@ const storez = (...args) => {
 
 const storezImpl = (val, start, options) => {
   let oldValue;
-  let currentValue;
+  let currentValue = val;
   const subscriptions = [];
 
-  let initialValue = val;
+  const hooks = [
+    options.localstorage && localstorageHook(options),
+    options.history && historyHook(options)
+  ].filter(Boolean);
 
-  if (options.localstorage) {
-    initialValue = readLocalStorage(options.localstorage.key);
-    if (!initialValue) {
-      localStorage.setItem(
-        options.localstorage.key,
-        localStorageSerializer.to(val)
-      );
-    }
-  }
+  const runHooks = (fnName, initial) =>
+    hooks.reduce((acc, cur) => (cur[fnName] ? cur[fnName](acc) : acc), initial);
+  let initialValue = runHooks("onInit", val);
 
   const valueStore = writable(initialValue, start);
 
   const dispose = valueStore.subscribe(newVal => {
     oldValue = currentValue;
     currentValue = newVal;
+    runHooks("onNewVal", newVal);
   });
+
+  const z = hooks.reduce(
+    (acc, cur) => (cur.exports ? Object.assign(acc, cur.exports) : acc),
+    {}
+  );
 
   return {
     subscribe: subscriptionFn => {
@@ -80,12 +88,8 @@ const storezImpl = (val, start, options) => {
           subscriptions.splice(index, 1);
         }
         if (subscriptions.length === 0) {
-          if (options.localstorage) {
-            localStorage.setItem(
-              options.localstorage.key,
-              localStorageSerializer.to(currentValue)
-            );
-          }
+          //dispose
+          runHooks("onDispose", currentValue);
           dispose();
         }
       };
@@ -99,7 +103,8 @@ const storezImpl = (val, start, options) => {
     update: fn => {
       valueStore.set(fn(currentValue));
       subscriptions.forEach(sub => sub(currentValue, oldValue));
-    }
+    },
+    z
   };
 };
 

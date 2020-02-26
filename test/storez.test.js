@@ -177,7 +177,7 @@ describe("'Subscribe' method unit test suite", () => {
   });
 });
 
-describe("options localstorage unit test suite", () => {
+describe("Localstorage hoook unit test suite", () => {
   it("reads from localstorage a string", () => {
     localStorage.setItem("lsKey", "valueFromLS");
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
@@ -222,5 +222,25 @@ describe("options localstorage unit test suite", () => {
     expect(localStorage.getItem("lsKey")).toEqual(
       JSON.stringify({ name: "anotherVal" })
     );
+  });
+});
+
+describe("History hook unit test suite", () => {
+  it("has a single item in history upond store creation", () => {
+    const store = sut("first", { history: { size: 3 } });
+    expect(get(store.z.history)).toEqual(["first"]);
+  });
+  it("keeps changes in history", () => {
+    const store = sut("first", { history: { size: 3 } });
+    store.set("second");
+    store.set("third");
+    expect(get(store.z.history)).toEqual(["first", "second", "third"]);
+  });
+  it("keeps the history size under limit", () => {
+    const store = sut("first", { history: { size: 3 } });
+    store.set("second");
+    store.set("third");
+    store.set("fourth");
+    expect(get(store.z.history)).toEqual(["second", "third", "fourth"]);
   });
 });
