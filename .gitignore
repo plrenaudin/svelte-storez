@@ -1,4 +1,5 @@
 node_modules
 .eslintcache
-coverage/
+coverage
 settings.json
+.vscode

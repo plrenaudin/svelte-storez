@@ -1,8 +1,8 @@
 {
   "name": "storez",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Svelte writable store with more.",
-  "main": "storez.js",
+  "main": "src/storez.js",
   "scripts": {
     "pretest": "npm run lint",
     "test": "npm run test:jest --",
