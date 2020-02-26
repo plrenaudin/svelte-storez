@@ -8,6 +8,10 @@ import historyHook from "./withHistory";
  * @property {function} subscribe Subscription function
  * @property {function} set Set function
  * @property {function} update Update function
+ * @property {StorezExtra} z Storez extra
+ *
+ * @typedef {Object} StorezExtra
+ * @property {SvelteDerivedStore} history Returns history of the past values of the store
  *
  * @typedef {Object} Options
  * @property {LocalStorageOptions} localstorage localstorage options

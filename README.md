@@ -46,12 +46,29 @@ localstorage.getItem("myPersistedStore") // === "changed value"
 ```js
 import storez from "svelte-storez";
 
-const myStore = storez("my value", { history: { size: 1000 } });
+export const store = storez("my value", { history: { size: 1000 } });
 
-myStore.set("changed value");
+store.set("changed value");
+```
 
-myStore.z.history; // is a Svelte derived store containing an array of all the previous values
-// e.g. ["my value", "changed value"]
+In the Svelte file:
+
+```html
+<script>
+  import { store } from "./store";
+  const history = store.z.history; // is a Svelte derived store containing an array of all the previous values
+  // e.g. ["my value", "changed value"]
+</script>
+
+<input type="text" bind:value="{$store}" />
+<p>Value: {$store}</p>
+
+<strong>History</strong>
+<ul>
+  {#each $history as item}
+  <li>{item}</li>
+  {/each}
+</ul>
 ```
 
 ## API
