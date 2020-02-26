@@ -5,6 +5,7 @@
 - Fully compatible with svelte writable store
 - Subscriber function receives the new and the old value
 - Read and persist value to localstorage
+- Keep previous values in history (easy undo/redo coming soon...)
 
 ## Usage example
 
@@ -39,3 +40,35 @@ dispose(); // persist in localStorage
 
 localstorage.getItem("myPersistedStore") // === "changed value"
 ```
+
+### With history
+
+```js
+import storez from "svelte-storez";
+
+const myStore = storez("my value", { history: { size: 1000 } });
+
+myStore.set("changed value");
+
+myStore.z.history; // is a Svelte derived store containing an array of all the previous values
+// e.g. ["my value", "changed value"]
+```
+
+## API
+
+```js
+// Svelte compatible store API
+storez(val);
+storez(val, start);
+
+// Same with Storez options
+storez(val, options);
+storez(val, start, options);
+```
+
+## Options
+
+| Module       | Options | Details                                                  |
+| ------------ | ------- | -------------------------------------------------------- |
+| localstorage | key     | Key under which the local storage will be saved          |
+| history      | size    | Overall size of the array of element kept in the history |

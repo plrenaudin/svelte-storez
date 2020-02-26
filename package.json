@@ -2,7 +2,7 @@
   "name": "storez",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "storez.js",
   "scripts": {
     "pretest": "npm run lint",
     "test": "npm run test:jest --",

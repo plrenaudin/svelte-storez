@@ -1,8 +1,8 @@
-import { writable } from "svelte/store";
+import { writable, derived } from "svelte/store";
 
 const historyHook = ({ history: { size = 50 } }) => {
   const history = writable([]);
-
+  const readableHistory = derived(history, $history => $history);
   return {
     onNewVal: value => {
       history.update(n => {
@@ -13,7 +13,7 @@ const historyHook = ({ history: { size = 50 } }) => {
       });
     },
     exports: {
-      history
+      history: readableHistory
     }
   };
 };
