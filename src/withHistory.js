@@ -15,9 +15,12 @@ const historyHook = ({ history: { size = 50, debounce: timeout } }) => {
 
   const undo = () => {
     history.update(n => {
+      if (n.length === 1) {
+        return;
+      }
       n.pop();
       const newValue = n[n.length - 1];
-      undoing = newValue;
+      undoing = { value: newValue };
       store.set(newValue);
       return n;
     });
@@ -27,7 +30,7 @@ const historyHook = ({ history: { size = 50, debounce: timeout } }) => {
     onStoreInit: storeInitialized => (store = storeInitialized),
     onNewVal: value => {
       //if there is an undo, the store.set will triger subscriber so we need to skip history for the value
-      if (undoing && undoing === value) {
+      if (undoing && undoing.value === value) {
         undoing = false;
         return;
       }

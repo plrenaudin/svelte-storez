@@ -264,9 +264,19 @@ describe("History hook unit test suite", () => {
     const store = sut("first", { history: true });
     store.set("coucou");
     store.z.undo();
-
     expect(get(store)).toEqual("first");
   });
+
+  it("Undoes until the initial value", () => {
+    const store = sut("first", { history: true });
+    store.set("second");
+    store.set("third");
+    store.z.undo();
+    store.z.undo();
+    store.z.undo();
+    expect(get(store)).toEqual("first");
+  });
+
   it("Undoes the last string change with debounce", () => {
     jest.useFakeTimers();
 
