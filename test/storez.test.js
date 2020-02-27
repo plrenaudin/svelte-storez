@@ -257,7 +257,7 @@ describe("History hook unit test suite", () => {
     store.set("value change");
     store.set("value changed");
     jest.runAllTimers();
-    expect(get(store.z.history)).toEqual(["value", "value changed"]);
+    expect(get(store.z.history)).toEqual(["value changed"]);
   });
 
   it("Undoes the last change", () => {
