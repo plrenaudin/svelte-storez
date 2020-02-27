@@ -1,6 +1,6 @@
 {
   "name": "storez",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Svelte writable store with more.",
   "main": "src/storez.js",
   "scripts": {

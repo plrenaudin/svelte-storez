@@ -267,4 +267,39 @@ describe("History hook unit test suite", () => {
 
     expect(get(store)).toEqual("first");
   });
+  it("Undoes the last string change with debounce", () => {
+    jest.useFakeTimers();
+
+    const store = sut("first", { history: { debounce: 200 } });
+
+    store.set("second");
+    jest.runAllTimers();
+    store.set("third");
+    jest.runAllTimers();
+    store.set("coucou");
+    jest.runAllTimers();
+    store.z.undo();
+    jest.runAllTimers();
+    store.z.undo();
+    jest.runAllTimers();
+    expect(get(store)).toEqual("second");
+  });
+  it("Undoes the last object change with debounce", () => {
+    jest.useFakeTimers();
+
+    const store = sut({ name: "first" }, { history: { debounce: 200 } });
+
+    store.set({ name: "second" });
+    jest.runAllTimers();
+    store.set({ name: "third" });
+    jest.runAllTimers();
+    store.set({ name: "coucou" });
+    jest.runAllTimers();
+    store.z.undo();
+    jest.runAllTimers();
+    store.z.undo();
+    jest.runAllTimers();
+
+    expect(get(store).name).toEqual("second");
+  });
 });
