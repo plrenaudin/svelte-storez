@@ -46,7 +46,9 @@ localstorage.getItem("myPersistedStore") // === "changed value"
 ```js
 import storez from "svelte-storez";
 
-export const store = storez("my value", { history: { size: 1000 } });
+export const store = storez("my value", {
+  history: { size: 1000, debounce: 250 }
+});
 
 store.set("changed value");
 ```
@@ -73,6 +75,8 @@ In the Svelte file:
 
 ## API
 
+### Constructor
+
 ```js
 // Svelte compatible store API
 storez(val);
@@ -83,9 +87,21 @@ storez(val, options);
 storez(val, start, options);
 ```
 
+### Storez instance
+
+```js
+const instance = storez("initial", ...);
+instance.set("newValue");
+instance.set("wrongValue");
+instance.z.history; // History module: Svelte readable store containing the state history
+instance.z.undo(); // History module: undo last mutation
+// Here: instance === newValue
+```
+
 ## Options
 
-| Module       | Options | Details                                                  |
-| ------------ | ------- | -------------------------------------------------------- |
-| localstorage | key     | Key under which the local storage will be saved          |
-| history      | size    | Overall size of the array of element kept in the history |
+| Module       | Options  | Type   | Details                                                  |
+| ------------ | -------- | ------ | -------------------------------------------------------- |
+| localstorage | key      | String | Key under which the local storage will be saved          |
+| history      | size     | Number | Overall size of the array of element kept in the history |
+|              | debounce | Number | Timeout between each insert in the history               |

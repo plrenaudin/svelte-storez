@@ -67,9 +67,12 @@ const storezImpl = (val, start, options) => {
 
   const runHooks = (fnName, initial) =>
     hooks.reduce((acc, cur) => (cur[fnName] ? cur[fnName](acc) : acc), initial);
+
   let initialValue = runHooks("onInit", val);
 
   const valueStore = writable(initialValue, start);
+
+  runHooks("onStoreInit", valueStore);
 
   const dispose = valueStore.subscribe(newVal => {
     oldValue = currentValue;

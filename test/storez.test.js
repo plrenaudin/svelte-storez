@@ -178,19 +178,19 @@ describe("'Subscribe' method unit test suite", () => {
 });
 
 describe("Localstorage hoook unit test suite", () => {
-  it("reads from localstorage a string", () => {
+  it("Reads from localstorage a string", () => {
     localStorage.setItem("lsKey", "valueFromLS");
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
     expect(get(store)).toEqual("valueFromLS");
   });
 
-  it("reads from localstorage an object", () => {
+  it("Reads from localstorage an object", () => {
     localStorage.setItem("lsKey", JSON.stringify({ value: "test" }));
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
     expect(get(store)).toEqual({ value: "test" });
   });
 
-  it("saves to localstorage as a string", () => {
+  it("Saves to localstorage as a string", () => {
     localStorage.clear();
     const store = sut("value", { localstorage: { key: "lsKey" } });
 
@@ -204,7 +204,7 @@ describe("Localstorage hoook unit test suite", () => {
     expect(localStorage.getItem("lsKey")).toEqual("anotherVal");
   });
 
-  it("saves to localstorage as an object", () => {
+  it("Saves to localstorage as an object", () => {
     localStorage.clear();
     const store = sut({ name: "value" }, { localstorage: { key: "lsKey" } });
 
@@ -226,21 +226,45 @@ describe("Localstorage hoook unit test suite", () => {
 });
 
 describe("History hook unit test suite", () => {
-  it("has a single item in history upond store creation", () => {
-    const store = sut("first", { history: { size: 3 } });
+  it("Has a single item in history upon store creation", () => {
+    const store = sut("first", { history: true });
     expect(get(store.z.history)).toEqual(["first"]);
   });
-  it("keeps changes in history", () => {
+
+  it("Keeps changes in history", () => {
     const store = sut("first", { history: { size: 3 } });
     store.set("second");
     store.set("third");
     expect(get(store.z.history)).toEqual(["first", "second", "third"]);
   });
-  it("keeps the history size under limit", () => {
+
+  it("Keeps the history size under limit", () => {
     const store = sut("first", { history: { size: 3 } });
     store.set("second");
     store.set("third");
     store.set("fourth");
     expect(get(store.z.history)).toEqual(["second", "third", "fourth"]);
+  });
+
+  it("Debounces write operation", () => {
+    jest.useFakeTimers();
+    const store = sut("value", { history: { size: 3, debounce: 5000 } });
+    store.set("value ");
+    store.set("value c");
+    store.set("value cha");
+    store.set("value chan");
+    store.set("value chang");
+    store.set("value change");
+    store.set("value changed");
+    jest.runAllTimers();
+    expect(get(store.z.history)).toEqual(["value", "value changed"]);
+  });
+
+  it("Undoes the last change", () => {
+    const store = sut("first", { history: true });
+    store.set("coucou");
+    store.z.undo();
+
+    expect(get(store)).toEqual("first");
   });
 });

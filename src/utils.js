@@ -18,3 +18,13 @@ export const localStorageSerializer = {
   },
   to: value => (value instanceof Object ? JSON.stringify(value) : value)
 };
+
+export const debounce = (func, delay) => {
+  let timer;
+  return function() {
+    const me = this;
+    const args = arguments;
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(me, args), delay);
+  };
+};
