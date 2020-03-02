@@ -1,4 +1,4 @@
-# svelte-storez
+# Storez
 
 ## Svelte writable store with extra feature
 
@@ -12,7 +12,7 @@
 ### Basic example
 
 ```js
-import storez from "svelte-storez";
+import storez from "storez";
 
 const myStore = storez("my value");
 
@@ -26,7 +26,7 @@ myStore.set("changed value"); // console output: 'my value' has been changed to 
 ### With localStorage
 
 ```js
-import storez from "svelte-storez";
+import storez from "storez";
 
 const myStore = storez("my value", { localstorage: { key: "myPersistedStore" } });
 
@@ -44,7 +44,7 @@ localstorage.getItem("myPersistedStore") // === "changed value"
 ### With history
 
 ```js
-import storez from "svelte-storez";
+import storez from "storez";
 
 export const store = storez("my value", {
   history: { size: 1000, debounce: 250 }
