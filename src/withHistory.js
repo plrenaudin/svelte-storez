@@ -28,8 +28,6 @@ const historyHook = ({ history: { size = 50, debounce: timeout } }) => {
       undoing = false;
       return;
     }
-    // initial value set directly to avoid debouncing
-
     history.update(n => {
       while (n.length >= size) {
         n.shift();
