@@ -5,7 +5,7 @@
   "main": "src/storez.js",
   "scripts": {
     "pretest": "npm run lint",
-    "test": "npm run test:jest --",
+    "test": "npm run test:jest",
     "lint": "eslint . --cache --fix",
     "test:jest": "jest",
     "test:watch": "jest --watch",
@@ -39,7 +39,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "npm test && lint-staged"
     }
   },
   "lint-staged": {
