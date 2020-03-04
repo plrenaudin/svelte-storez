@@ -228,27 +228,33 @@ describe("Localstorage hoook unit test suite", () => {
 describe("History hook unit test suite", () => {
   it("Has a single item in history upon store creation", () => {
     const store = sut("first", { history: true });
+
     expect(get(store.z.history)).toEqual(["first"]);
   });
 
   it("Keeps changes in history", () => {
     const store = sut("first", { history: { size: 3 } });
+
     store.set("second");
     store.set("third");
+
     expect(get(store.z.history)).toEqual(["first", "second", "third"]);
   });
 
   it("Keeps the history size under limit", () => {
     const store = sut("first", { history: { size: 3 } });
+
     store.set("second");
     store.set("third");
     store.set("fourth");
+
     expect(get(store.z.history)).toEqual(["second", "third", "fourth"]);
   });
 
   it("Debounces write operation", () => {
     jest.useFakeTimers();
     const store = sut("value", { history: { size: 3, debounce: 5000 } });
+
     store.set("value ");
     store.set("value c");
     store.set("value cha");
@@ -257,23 +263,28 @@ describe("History hook unit test suite", () => {
     store.set("value change");
     store.set("value changed");
     jest.runAllTimers();
+
     expect(get(store.z.history)).toEqual(["value changed"]);
   });
 
   it("Undoes the last change", () => {
     const store = sut("first", { history: true });
+
     store.set("coucou");
     store.z.undo();
+
     expect(get(store)).toEqual("first");
   });
 
   it("Undoes until the initial value", () => {
     const store = sut("first", { history: true });
+
     store.set("second");
     store.set("third");
     store.z.undo();
     store.z.undo();
     store.z.undo();
+
     expect(get(store)).toEqual("first");
   });
 
@@ -311,5 +322,41 @@ describe("History hook unit test suite", () => {
     jest.runAllTimers();
 
     expect(get(store).name).toEqual("second");
+  });
+});
+
+describe("Rest hook unit test suite", () => {
+  it("Gets the content with params", async () => {
+    const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+    const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
+
+    await store.z.load({ name: "test" });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users?name=test");
+    expect(get(store)).toEqual([1, 2, 3]);
+  });
+
+  it("Gets the content without params", async () => {
+    const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+    const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
+
+    await store.z.load();
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users");
+    expect(get(store)).toEqual([1, 2, 3]);
+  });
+
+  xit("Calls the post method for a new object", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+
+    const store = sut([{ name: "test" }], {
+      rest: { endpoint: "/api/users", fetchImpl }
+    });
+
+    store.update(n => n.concat({ name: "test2" }));
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 });

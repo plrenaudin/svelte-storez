@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import localstorageHook from "./withLocalstorage";
 import historyHook from "./withHistory";
+import restHook from "./withRest";
 
 /**
  * Svelte compatible store type
@@ -12,16 +13,25 @@ import historyHook from "./withHistory";
  *
  * @typedef {Object} StorezExtra
  * @property {SvelteDerivedStore} history Returns history of the past values of the store
+ * @property {(params:Object) => Promise<[]>} load Load initial set of data if using the REST module
  *
  * @typedef {Object} Options
- * @property {LocalStorageOptions} localstorage localstorage options
- * @property {HistoryOptions} history history options
+ * @property {LocalStorageOptions} localstorage Localstorage options
+ * @property {HistoryOptions} history History options
+ * @property {RestOptions} rest Rest options
  *
  * @typedef {Object} LocalStorageOptions
- * @property {string} key Key used for the local storage
+ * @property {String} key Key used for the local storage
+ *
+ * @typedef {Object} RestOptions
+ * @property {String} endpoint URL of the rest API endpoint (e.g. /api/users)
+ * @property {String} [idParam="id"] Name of the identifier param (most of the time and default = "id")
+ * @property {FetchFn} [fetchImpl=window.fetch] Fetch compatible implementation to use (default = window.fetch)
+ * @property {object} fetchParams Fetch compatible parameters to pass to the fetching function
  *
  * @typedef {Object} HistoryOptions
- * @property {Number} size Number of mutations to keep in history
+ * @property {Number} [size=50] Number of mutations to keep in history
+ * @property {Number} debounce Interval in ms between 2 entries in history
  *
  * @typedef {(val: any) => SvelteCompatibleStore} Simple
  * @typedef {(val: any, start:function) => SvelteCompatibleStore} Compatible
@@ -62,13 +72,16 @@ const storezImpl = (val, start, options) => {
 
   const hooks = [
     options.localstorage && localstorageHook(options),
-    options.history && historyHook(options)
+    options.history && historyHook(options),
+    options.rest && restHook(options)
   ].filter(Boolean);
 
-  const runHooks = (fnName, initial) =>
-    hooks.reduce((acc, cur) => (cur[fnName] ? cur[fnName](acc) : acc), initial);
+  const runHooks = (fnName, ...args) =>
+    hooks.forEach(hook => hook[fnName] && hook[fnName](...args));
+  const processHooks = (fnName, ...args) =>
+    hooks.reduce((acc, cur) => (cur[fnName] ? cur[fnName](acc) : acc), ...args);
 
-  let initialValue = runHooks("onInit", val);
+  let initialValue = processHooks("onInit", val);
 
   const valueStore = writable(initialValue, start);
 
@@ -77,7 +90,7 @@ const storezImpl = (val, start, options) => {
   const dispose = valueStore.subscribe(newVal => {
     oldValue = currentValue;
     currentValue = newVal;
-    runHooks("onNewVal", newVal);
+    runHooks("onNewVal", newVal, oldValue);
   });
 
   const z = hooks.reduce(
