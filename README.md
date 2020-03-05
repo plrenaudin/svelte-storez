@@ -46,9 +46,7 @@ localstorage.getItem("myPersistedStore") // === "changed value"
 ```js
 import storez from "storez";
 
-export const store = storez("my value", {
-  history: { size: 1000, debounce: 250 }
-});
+export const store = storez("my value", { history: { size: 1000 } });
 
 store.set("changed value");
 ```
@@ -102,6 +100,6 @@ instance.z.undo(); // History module: undo last mutation
 
 | Module       | Options  | Type   | Details                                                  |
 | ------------ | -------- | ------ | -------------------------------------------------------- |
+| (default)    | debounce | Number | Timeout between each insert in the store                 |
 | localstorage | key      | String | Key under which the local storage will be saved          |
 | history      | size     | Number | Overall size of the array of element kept in the history |
-|              | debounce | Number | Timeout between each insert in the history               |

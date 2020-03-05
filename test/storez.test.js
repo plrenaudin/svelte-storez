@@ -175,6 +175,24 @@ describe("'Subscribe' method unit test suite", () => {
       ]
     `);
   });
+  it("Debounces write operation", () => {
+    jest.useFakeTimers();
+    const store = sut("value", { debounce: 5000 });
+    let current;
+    const dispose = store.subscribe(value => (current = value));
+    store.set("value ");
+    store.set("value c");
+    store.set("value cha");
+    store.set("value chan");
+    store.set("value chang");
+    store.set("value change");
+    store.set("value changed");
+    expect(current).toEqual("value");
+
+    jest.runAllTimers();
+    expect(current).toEqual("value changed");
+    dispose();
+  });
 });
 
 describe("Localstorage hoook unit test suite", () => {
@@ -246,20 +264,6 @@ describe("History hook unit test suite", () => {
     expect(get(store.z.history)).toEqual(["second", "third", "fourth"]);
   });
 
-  it("Debounces write operation", () => {
-    jest.useFakeTimers();
-    const store = sut("value", { history: { size: 3, debounce: 5000 } });
-    store.set("value ");
-    store.set("value c");
-    store.set("value cha");
-    store.set("value chan");
-    store.set("value chang");
-    store.set("value change");
-    store.set("value changed");
-    jest.runAllTimers();
-    expect(get(store.z.history)).toEqual(["value changed"]);
-  });
-
   it("Undoes the last change", () => {
     const store = sut("first", { history: true });
     store.set("coucou");
@@ -280,7 +284,7 @@ describe("History hook unit test suite", () => {
   it("Undoes the last string change with debounce", () => {
     jest.useFakeTimers();
 
-    const store = sut("first", { history: { debounce: 200 } });
+    const store = sut("first", { debounce: 200, history: true });
 
     store.set("second");
     jest.runAllTimers();
@@ -294,10 +298,11 @@ describe("History hook unit test suite", () => {
     jest.runAllTimers();
     expect(get(store)).toEqual("second");
   });
+
   it("Undoes the last object change with debounce", () => {
     jest.useFakeTimers();
 
-    const store = sut({ name: "first" }, { history: { debounce: 200 } });
+    const store = sut({ name: "first" }, { history: true, debounce: 200 });
 
     store.set({ name: "second" });
     jest.runAllTimers();

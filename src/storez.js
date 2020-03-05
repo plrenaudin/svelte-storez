@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import localstorageHook from "./withLocalstorage";
 import historyHook from "./withHistory";
+import { debounce } from "./utils";
 
 /**
  * Svelte compatible store type
@@ -12,16 +13,17 @@ import historyHook from "./withHistory";
  *
  * @typedef {Object} StorezExtra
  * @property {SvelteDerivedStore} history Returns history of the past values of the store
+ * @property {Number} debounce Interval in ms between 2 stores updates
  *
  * @typedef {Object} Options
- * @property {LocalStorageOptions} localstorage localstorage options
- * @property {HistoryOptions} history history options
+ * @property {LocalStorageOptions} localstorage Localstorage options
+ * @property {HistoryOptions} history History options
  *
  * @typedef {Object} LocalStorageOptions
- * @property {string} key Key used for the local storage
+ * @property {String} key Key used for the local storage
  *
  * @typedef {Object} HistoryOptions
- * @property {Number} size Number of mutations to keep in history
+ * @property {Number} [size=50] Number of mutations to keep in history
  *
  * @typedef {(val: any) => SvelteCompatibleStore} Simple
  * @typedef {(val: any, start:function) => SvelteCompatibleStore} Compatible
@@ -85,6 +87,15 @@ const storezImpl = (val, start, options) => {
     {}
   );
 
+  const setter = newVal => {
+    valueStore.set(newVal);
+    subscriptions.forEach(sub => sub(currentValue, oldValue));
+  };
+
+  const updater = fn => {
+    setter(fn(currentValue));
+  };
+
   return {
     subscribe: subscriptionFn => {
       subscriptions.push(subscriptionFn);
@@ -102,15 +113,10 @@ const storezImpl = (val, start, options) => {
       };
     },
 
-    set: newVal => {
-      valueStore.set(newVal);
-      subscriptions.forEach(sub => sub(currentValue, oldValue));
-    },
+    set: options.debounce > 0 ? debounce(setter, options.debounce) : setter,
 
-    update: fn => {
-      valueStore.set(fn(currentValue));
-      subscriptions.forEach(sub => sub(currentValue, oldValue));
-    },
+    update:
+      options.debounce > 0 ? debounce(updater, options.debounce) : updater,
     z
   };
 };
