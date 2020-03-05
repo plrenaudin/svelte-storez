@@ -6,8 +6,11 @@
 - Subscriber function receives the new and the old value
 - Read and persist value to localstorage
 - Keep previous values in history (easy undo/redo coming soon...)
+- Write operation debouncing
 
 ## Usage example
+
+Most of the use cases are covered in this sandbox: https://codesandbox.io/s/storez-demo-c11v9
 
 ### Basic example
 
