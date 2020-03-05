@@ -280,7 +280,8 @@ describe("History hook unit test suite", () => {
     store.z.undo();
     expect(get(store)).toEqual("first");
   });
-
+});
+describe("Debounce option", () => {
   it("Undoes the last string change with debounce", () => {
     jest.useFakeTimers();
 

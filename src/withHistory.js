@@ -1,7 +1,6 @@
 import { writable, derived } from "svelte/store";
-import { debounce } from "./utils";
 
-const historyHook = ({ history: { size = 50, debounce: timeout } }) => {
+const historyHook = ({ history: { size = 50 } }) => {
   const history = writable([]);
   let store;
   let undoing;
@@ -38,7 +37,7 @@ const historyHook = ({ history: { size = 50, debounce: timeout } }) => {
 
   return {
     onStoreInit,
-    onNewVal: timeout > 0 ? debounce(onNewVal, timeout) : onNewVal,
+    onNewVal,
     exports: {
       history: readableHistory,
       undo
