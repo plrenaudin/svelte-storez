@@ -1,6 +1,6 @@
 {
   "name": "storez",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Svelte writable store with more.",
   "main": "src/storez.js",
   "scripts": {
@@ -24,11 +24,11 @@
   },
   "license": "ISC",
   "dependencies": {
-    "svelte": "^3.19.1"
+    "svelte": "^3.19.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.6",
-    "@babel/preset-env": "^7.8.6",
+    "@babel/core": "^7.8.7",
+    "@babel/preset-env": "^7.8.7",
     "babel-jest": "^25.1.0",
     "eslint": "^6.8.0",
     "eslint-plugin-prettier": "^3.1.2",
