@@ -6,8 +6,11 @@
 - Subscriber function receives the new and the old value
 - Read and persist value to localstorage
 - Keep previous values in history (easy undo/redo coming soon...)
+- Write operation debouncing
 
 ## Usage example
+
+Most of the use cases are covered in this sandbox: https://codesandbox.io/s/storez-demo-c11v9
 
 ### Basic example
 
@@ -46,9 +49,7 @@ localstorage.getItem("myPersistedStore") // === "changed value"
 ```js
 import storez from "storez";
 
-export const store = storez("my value", {
-  history: { size: 1000, debounce: 250 }
-});
+export const store = storez("my value", { history: { size: 1000 } });
 
 store.set("changed value");
 ```
@@ -110,6 +111,6 @@ $instance = [...$instance, {name:"another", label: "test"}]; // triggers a POST 
 
 | Module       | Options  | Type   | Details                                                  |
 | ------------ | -------- | ------ | -------------------------------------------------------- |
+| (default)    | debounce | Number | Timeout between each insert in the store                 |
 | localstorage | key      | String | Key under which the local storage will be saved          |
 | history      | size     | Number | Overall size of the array of element kept in the history |
-|              | debounce | Number | Timeout between each insert in the history               |

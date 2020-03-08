@@ -2,6 +2,7 @@ import { writable } from "svelte/store";
 import localstorageHook from "./withLocalstorage";
 import historyHook from "./withHistory";
 import restHook from "./withRest";
+import { debounce } from "./utils";
 
 /**
  * Svelte compatible store type
@@ -14,6 +15,7 @@ import restHook from "./withRest";
  * @typedef {Object} StorezExtra
  * @property {SvelteDerivedStore} history Returns history of the past values of the store
  * @property {(params:Object) => Promise<[]>} load Load initial set of data if using the REST module
+ * @property {Number} debounce Interval in ms between 2 stores updates
  *
  * @typedef {Object} Options
  * @property {LocalStorageOptions} localstorage Localstorage options
@@ -31,7 +33,6 @@ import restHook from "./withRest";
  *
  * @typedef {Object} HistoryOptions
  * @property {Number} [size=50] Number of mutations to keep in history
- * @property {Number} debounce Interval in ms between 2 entries in history
  *
  * @typedef {(val: any) => SvelteCompatibleStore} Simple
  * @typedef {(val: any, start:function) => SvelteCompatibleStore} Compatible
@@ -98,6 +99,15 @@ const storezImpl = (val, start, options) => {
     {}
   );
 
+  const setter = newVal => {
+    valueStore.set(newVal);
+    subscriptions.forEach(sub => sub(currentValue, oldValue));
+  };
+
+  const updater = fn => {
+    setter(fn(currentValue));
+  };
+
   return {
     subscribe: subscriptionFn => {
       subscriptions.push(subscriptionFn);
@@ -115,15 +125,10 @@ const storezImpl = (val, start, options) => {
       };
     },
 
-    set: newVal => {
-      valueStore.set(newVal);
-      subscriptions.forEach(sub => sub(currentValue, oldValue));
-    },
+    set: options.debounce > 0 ? debounce(setter, options.debounce) : setter,
 
-    update: fn => {
-      valueStore.set(fn(currentValue));
-      subscriptions.forEach(sub => sub(currentValue, oldValue));
-    },
+    update:
+      options.debounce > 0 ? debounce(updater, options.debounce) : updater,
     z
   };
 };

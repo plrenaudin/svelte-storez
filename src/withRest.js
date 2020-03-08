@@ -24,13 +24,17 @@ const restHook = ({
       let url = `${endpoint}`;
       if (params) {
         const search = new URLSearchParams(params);
-        url = url.concat(`?${search.toString()}`);
+        if (params[idParam]) {
+          url = url.concat(`/${params[idParam]}`);
+          search.delete(idParam);
+        }
+        if (!search.keys().next().done) {
+          url = url.concat(`?${search.toString()}`);
+        }
       }
       const response = await fetchImpl(url, fetchParams);
       const data = response.json();
-      if (Array.isArray(data)) {
-        store.set(data);
-      }
+      store.set(data);
     } catch (e) {
       console.error(e);
     }

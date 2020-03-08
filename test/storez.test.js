@@ -175,6 +175,24 @@ describe("'Subscribe' method unit test suite", () => {
       ]
     `);
   });
+  it("Debounces write operation", () => {
+    jest.useFakeTimers();
+    const store = sut("value", { debounce: 5000 });
+    let current;
+    const dispose = store.subscribe(value => (current = value));
+    store.set("value ");
+    store.set("value c");
+    store.set("value cha");
+    store.set("value chan");
+    store.set("value chang");
+    store.set("value change");
+    store.set("value changed");
+    expect(current).toEqual("value");
+
+    jest.runAllTimers();
+    expect(current).toEqual("value changed");
+    dispose();
+  });
 });
 
 describe("Localstorage hoook unit test suite", () => {
@@ -251,22 +269,6 @@ describe("History hook unit test suite", () => {
     expect(get(store.z.history)).toEqual(["second", "third", "fourth"]);
   });
 
-  it("Debounces write operation", () => {
-    jest.useFakeTimers();
-    const store = sut("value", { history: { size: 3, debounce: 5000 } });
-
-    store.set("value ");
-    store.set("value c");
-    store.set("value cha");
-    store.set("value chan");
-    store.set("value chang");
-    store.set("value change");
-    store.set("value changed");
-    jest.runAllTimers();
-
-    expect(get(store.z.history)).toEqual(["value changed"]);
-  });
-
   it("Undoes the last change", () => {
     const store = sut("first", { history: true });
 
@@ -287,11 +289,12 @@ describe("History hook unit test suite", () => {
 
     expect(get(store)).toEqual("first");
   });
-
+});
+describe("Debounce option", () => {
   it("Undoes the last string change with debounce", () => {
     jest.useFakeTimers();
 
-    const store = sut("first", { history: { debounce: 200 } });
+    const store = sut("first", { debounce: 200, history: true });
 
     store.set("second");
     jest.runAllTimers();
@@ -305,10 +308,11 @@ describe("History hook unit test suite", () => {
     jest.runAllTimers();
     expect(get(store)).toEqual("second");
   });
+
   it("Undoes the last object change with debounce", () => {
     jest.useFakeTimers();
 
-    const store = sut({ name: "first" }, { history: { debounce: 200 } });
+    const store = sut({ name: "first" }, { history: true, debounce: 200 });
 
     store.set({ name: "second" });
     jest.runAllTimers();
@@ -337,6 +341,36 @@ describe("Rest hook unit test suite", () => {
     expect(get(store)).toEqual([1, 2, 3]);
   });
 
+  it("Gets the content by id", async () => {
+    const fetchImpl = jest.fn(() => ({
+      json: () => ({ name: "test", id: 123 })
+    }));
+    const store = sut([], {
+      rest: { endpoint: "/api/users", fetchImpl }
+    });
+
+    await store.z.load({ id: 123 });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/123");
+    expect(get(store)).toEqual({ name: "test", id: 123 });
+  });
+
+  it("Gets the content by id with custom id param", async () => {
+    const fetchImpl = jest.fn(() => ({
+      json: () => ({ name: "test", idParam: 123 })
+    }));
+    const store = sut([], {
+      rest: { endpoint: "/api/users", fetchImpl, idParam: "idParam" }
+    });
+
+    await store.z.load({ idParam: 123 });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/123");
+    expect(get(store)).toEqual({ name: "test", idParam: 123 });
+  });
+
   it("Gets the content without params", async () => {
     const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
     const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
@@ -348,7 +382,7 @@ describe("Rest hook unit test suite", () => {
     expect(get(store)).toEqual([1, 2, 3]);
   });
 
-  xit("Calls the post method for a new object", () => {
+  xit("Calls the post method for a new object in an array", () => {
     const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
 
     const store = sut([{ name: "test" }], {
@@ -358,5 +392,51 @@ describe("Rest hook unit test suite", () => {
     store.update(n => n.concat({ name: "test2" }));
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "test2" }
+    });
+  });
+
+  xit("Calls the put method for a change in the object property", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut([{ name: "test", id: 1 }], {
+      rest: { endpoint: "/api/users", fetchImpl }
+    });
+
+    store.set({
+      name: "changedTest"
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "test2", id: 1 }
+    });
+  });
+  xit("Calls the put method for an object change in an array", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut(
+      [
+        { name: "test", id: 1 },
+        { name: "test2", id: 2 }
+      ],
+      {
+        rest: { endpoint: "/api/users", fetchImpl }
+      }
+    );
+
+    store.set([
+      { name: "testChanged", id: 1 },
+      { name: "test2", id: 2 }
+    ]);
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "testChanged", id: 2 }
+    });
   });
 });
