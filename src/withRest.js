@@ -1,3 +1,5 @@
+import { diff } from "./utils";
+
 /* eslint-disable no-unused-vars */
 const restHook = ({
   rest: { endpoint, idParam = "id", fetchImpl = window.fetch, fetchParams = {} }
@@ -15,7 +17,29 @@ const restHook = ({
       loading = false;
       return;
     }
-    //TODO logic for API calls
+    const result = diff(old, value);
+    const promises = Object.entries(result).reduce((acc, [method, entries]) => {
+      return acc.concat(
+        entries.map(entry => {
+          switch (method) {
+            case "post":
+              return fetchImpl(endpoint, {
+                method: "POST",
+                body: entry
+              });
+            case "put":
+              return fetchImpl(`${endpoint}/${entry[idParam]}`, {
+                method: "PUT",
+                body: entry
+              });
+            case "del":
+              return fetchImpl(`${endpoint}/${entry}`, {
+                method: "DELETE"
+              });
+          }
+        })
+      );
+    }, []);
   };
 
   const load = async params => {

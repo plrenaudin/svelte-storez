@@ -382,10 +382,10 @@ describe("Rest hook unit test suite", () => {
     expect(get(store)).toEqual([1, 2, 3]);
   });
 
-  xit("Calls the post method for a new object in an array", () => {
+  it("Calls the post method for a new object in an array", () => {
     const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
 
-    const store = sut([{ name: "test" }], {
+    const store = sut([{ id: 1, name: "test" }], {
       rest: { endpoint: "/api/users", fetchImpl }
     });
 
@@ -393,29 +393,29 @@ describe("Rest hook unit test suite", () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][1]).toEqual({
-      method: "PUT",
+      method: "POST",
       body: { name: "test2" }
     });
   });
 
-  xit("Calls the put method for a change in the object property", () => {
+  it("Calls the put method for a change in the object property", () => {
     const fetchImpl = jest.fn(() => ({ json: () => {} }));
 
     const store = sut([{ name: "test", id: 1 }], {
       rest: { endpoint: "/api/users", fetchImpl }
     });
 
-    store.set({
-      name: "changedTest"
-    });
+    store.set({ id: 1, name: "changedTest" });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/1");
     expect(fetchImpl.mock.calls[0][1]).toEqual({
       method: "PUT",
-      body: { name: "test2", id: 1 }
+      body: { name: "changedTest", id: 1 }
     });
   });
-  xit("Calls the put method for an object change in an array", () => {
+  it("Calls the put method for an object change in an array", () => {
     const fetchImpl = jest.fn(() => ({ json: () => {} }));
 
     const store = sut(
@@ -436,7 +436,45 @@ describe("Rest hook unit test suite", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][1]).toEqual({
       method: "PUT",
-      body: { name: "testChanged", id: 2 }
+      body: { name: "testChanged", id: 1 }
+    });
+  });
+  it("Logs multiple calls for a serie of changes", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut(
+      [
+        { name: "test", id: 1 },
+        { name: "test2", id: 2 },
+        { name: "testToDelete", id: 3 }
+      ],
+      {
+        rest: { endpoint: "/api/users", fetchImpl }
+      }
+    );
+
+    store.set([
+      { name: "testChanged", id: 1 },
+      { name: "test2", id: 2 },
+      { name: "newOne" }
+    ]);
+
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    // POST
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "POST",
+      body: { name: "newOne" }
+    });
+    //PUT
+    expect(fetchImpl.mock.calls[1][0]).toEqual("/api/users/1");
+    expect(fetchImpl.mock.calls[1][1]).toEqual({
+      method: "PUT",
+      body: { name: "testChanged", id: 1 }
+    });
+    //DELETE
+    expect(fetchImpl.mock.calls[2][0]).toEqual("/api/users/3");
+    expect(fetchImpl.mock.calls[2][1]).toEqual({
+      method: "DELETE"
     });
   });
 });
