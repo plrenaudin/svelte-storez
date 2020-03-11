@@ -29,7 +29,7 @@ import { debounce } from "./utils";
  * @property {String} endpoint URL of the rest API endpoint (e.g. /api/users)
  * @property {String} [idParam="id"] Name of the identifier param (most of the time and default = "id")
  * @property {FetchFn} [fetchImpl=window.fetch] Fetch compatible implementation to use (default = window.fetch)
- * @property {object} fetchParams Fetch compatible parameters to pass to the fetching function
+ * @property {Object} fetchParams Fetch compatible parameters to pass to the fetching function
  *
  * @typedef {Object} HistoryOptions
  * @property {Number} [size=50] Number of mutations to keep in history

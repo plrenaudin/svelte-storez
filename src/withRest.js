@@ -25,16 +25,20 @@ const restHook = ({
             case "post":
               return fetchImpl(endpoint, {
                 method: "POST",
-                body: entry
+                body: entry,
+                ...fetchParams
               });
             case "put":
               return fetchImpl(`${endpoint}/${entry[idParam]}`, {
                 method: "PUT",
-                body: entry
+                body: entry,
+                ...fetchParams
               });
+
             case "del":
               return fetchImpl(`${endpoint}/${entry}`, {
-                method: "DELETE"
+                method: "DELETE",
+                ...fetchParams
               });
           }
         })
@@ -43,9 +47,9 @@ const restHook = ({
   };
 
   const load = async params => {
+    let url = `${endpoint}`;
     try {
       loading = true;
-      let url = `${endpoint}`;
       if (params) {
         const search = new URLSearchParams(params);
         if (params[idParam]) {
@@ -60,7 +64,7 @@ const restHook = ({
       const data = response.json();
       store.set(data);
     } catch (e) {
-      console.error(e);
+      throw new Error(`Error thrown while fetching ${url}`, e);
     }
   };
 

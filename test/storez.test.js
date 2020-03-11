@@ -477,4 +477,26 @@ describe("Rest hook unit test suite", () => {
       method: "DELETE"
     });
   });
+  it("calls the fetchImpl with additional params provided", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut([{ name: "test", id: 1 }], {
+      rest: {
+        endpoint: "/api/users",
+        fetchImpl,
+        fetchParams: { headers: { auth: "my custom auth" } }
+      }
+    });
+
+    store.set({ id: 1, name: "changedTest" });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/1");
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "changedTest", id: 1 },
+      headers: { auth: "my custom auth" }
+    });
+  });
 });
