@@ -86,7 +86,16 @@ const storezImpl = (val, start, options) => {
 
   const valueStore = writable(initialValue, start);
 
-  runHooks("onStoreInit", valueStore);
+  const setter = newVal => {
+    valueStore.set(newVal);
+    subscriptions.forEach(sub => sub(currentValue, oldValue));
+  };
+
+  const updater = fn => {
+    setter(fn(currentValue));
+  };
+
+  runHooks("onStoreInit", setter);
 
   const dispose = valueStore.subscribe(newVal => {
     oldValue = currentValue;
@@ -98,15 +107,6 @@ const storezImpl = (val, start, options) => {
     (acc, cur) => (cur.exports ? Object.assign(acc, cur.exports) : acc),
     {}
   );
-
-  const setter = newVal => {
-    valueStore.set(newVal);
-    subscriptions.forEach(sub => sub(currentValue, oldValue));
-  };
-
-  const updater = fn => {
-    setter(fn(currentValue));
-  };
 
   return {
     subscribe: subscriptionFn => {

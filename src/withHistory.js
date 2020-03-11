@@ -2,10 +2,12 @@ import { writable, derived } from "svelte/store";
 
 const historyHook = ({ history: { size = 50 } }) => {
   const history = writable([]);
-  let store;
   let undoing;
+  let setter;
 
   const readableHistory = derived(history, $history => $history);
+
+  const onStoreInit = valueStoreSetter => (setter = valueStoreSetter);
 
   const undo = () => {
     history.update(n => {
@@ -15,12 +17,11 @@ const historyHook = ({ history: { size = 50 } }) => {
       n.pop();
       const newValue = n[n.length - 1];
       undoing = { value: newValue };
-      store.set(newValue);
+      setter(newValue);
       return n;
     });
   };
 
-  const onStoreInit = storeInitialized => (store = storeInitialized);
   const onNewVal = value => {
     //if there is an undo, the store.set will triger subscriber so we need to skip history for the value
     if (undoing && undoing.value === value) {
@@ -36,8 +37,8 @@ const historyHook = ({ history: { size = 50 } }) => {
   };
 
   return {
-    onStoreInit,
     onNewVal,
+    onStoreInit,
     exports: {
       history: readableHistory,
       undo

@@ -7,9 +7,9 @@ const restHook = ({
   if (!endpoint) {
     throw new Error("Endpoint parameter is required");
   }
-  let store;
+  let setter;
   let loading = false;
-  const onStoreInit = storeInitialized => (store = storeInitialized);
+  const onStoreInit = valueStoreSetter => (setter = valueStoreSetter);
 
   const onNewVal = (value, old) => {
     // do not trigger rest if data comes from teh loading step
@@ -62,7 +62,7 @@ const restHook = ({
       }
       const response = await fetchImpl(url, fetchParams);
       const data = response.json();
-      store.set(data);
+      setter(data);
     } catch (e) {
       throw new Error(`Error thrown while fetching ${url}`, e);
     }

@@ -3,54 +3,84 @@ import sut from "../src/storez";
 
 describe("'Set' method unit test suite", () => {
   it("Should save the string value on set", () => {
+    let current;
     const store = sut("intialValue");
+    store.subscribe(newVal => (current = newVal));
+
     store.set("changed value");
-    expect(get(store)).toEqual("changed value");
+
+    expect(current).toEqual("changed value");
   });
 
   it("Should save the object value on set", () => {
+    let current;
     const store = sut({ name: "initial" });
+    store.subscribe(newVal => (current = newVal));
+
     store.set({ name: "changed" });
-    expect(get(store).name).toEqual("changed");
+
+    expect(current.name).toEqual("changed");
   });
 
   it("Should save the array value on set", () => {
+    let current;
     const store = sut([1, 2, 3, 4]);
+    store.subscribe(newVal => (current = newVal));
+
     store.set([1, 2, 3]);
-    expect(get(store)).toEqual([1, 2, 3]);
+
+    expect(current).toEqual([1, 2, 3]);
   });
 
   it("Should save the value on multiple stores", () => {
+    let current;
+    let current2;
     const store1 = sut("coucou");
+    store1.subscribe(newVal => (current = newVal));
     const store2 = sut([1, 2, 3]);
+    store2.subscribe(newVal => (current2 = newVal));
+
     store1.set("coucouChanged");
     store2.set([3, 2, 1]);
-    expect(get(store1)).toEqual("coucouChanged");
-    expect(get(store2)).toEqual([3, 2, 1]);
+
+    expect(current).toEqual("coucouChanged");
+    expect(current2).toEqual([3, 2, 1]);
   });
 });
 
 describe("'Update' method unit test suite", () => {
   it("Should save the string value on update", () => {
+    let current;
     const store = sut("intialValue");
+    store.subscribe(newVal => (current = newVal));
+
     store.update(n => n + "Changed");
-    expect(get(store)).toEqual("intialValueChanged");
+
+    expect(current).toEqual("intialValueChanged");
   });
 
   it("Should save the object value on update", () => {
+    let current;
     const store = sut({ name: "initial" });
+    store.subscribe(newVal => (current = newVal));
+
     store.update(n => {
       n.name += "Changed";
       return n;
     });
-    expect(get(store).name).toEqual("initialChanged");
+
+    expect(current.name).toEqual("initialChanged");
   });
 
   it("Should save the array value on update", () => {
     const initial = [1, 2, 3];
+    let current;
     const store = sut(initial);
+    store.subscribe(newVal => (current = newVal));
+
     store.update(n => n.concat(4));
-    expect(get(store)).toEqual(initial.concat(4));
+
+    expect(current).toEqual(initial.concat(4));
   });
 });
 
@@ -197,15 +227,21 @@ describe("'Subscribe' method unit test suite", () => {
 
 describe("Localstorage hoook unit test suite", () => {
   it("Reads from localstorage a string", () => {
+    let current;
     localStorage.setItem("lsKey", "valueFromLS");
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
-    expect(get(store)).toEqual("valueFromLS");
+    store.subscribe(newVal => (current = newVal));
+
+    expect(current).toEqual("valueFromLS");
   });
 
   it("Reads from localstorage an object", () => {
+    let current;
     localStorage.setItem("lsKey", JSON.stringify({ value: "test" }));
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
-    expect(get(store)).toEqual({ value: "test" });
+    store.subscribe(newVal => (current = newVal));
+
+    expect(current).toEqual({ value: "test" });
   });
 
   it("Saves to localstorage as a string", () => {
@@ -270,16 +306,20 @@ describe("History hook unit test suite", () => {
   });
 
   it("Undoes the last change", () => {
+    let current;
     const store = sut("first", { history: true });
+    store.subscribe(newVal => (current = newVal));
 
     store.set("coucou");
     store.z.undo();
 
-    expect(get(store)).toEqual("first");
+    expect(current).toEqual("first");
   });
 
   it("Undoes until the initial value", () => {
     const store = sut("first", { history: true });
+    let current;
+    store.subscribe(newVal => (current = newVal));
 
     store.set("second");
     store.set("third");
@@ -287,14 +327,15 @@ describe("History hook unit test suite", () => {
     store.z.undo();
     store.z.undo();
 
-    expect(get(store)).toEqual("first");
+    expect(current).toEqual("first");
   });
 });
 describe("Debounce option", () => {
   it("Undoes the last string change with debounce", () => {
     jest.useFakeTimers();
-
+    let current;
     const store = sut("first", { debounce: 200, history: true });
+    store.subscribe(newVal => (current = newVal));
 
     store.set("second");
     jest.runAllTimers();
@@ -306,13 +347,14 @@ describe("Debounce option", () => {
     jest.runAllTimers();
     store.z.undo();
     jest.runAllTimers();
-    expect(get(store)).toEqual("second");
+    expect(current).toEqual("second");
   });
 
   it("Undoes the last object change with debounce", () => {
     jest.useFakeTimers();
-
+    let current;
     const store = sut({ name: "first" }, { history: true, debounce: 200 });
+    store.subscribe(newVal => (current = newVal));
 
     store.set({ name: "second" });
     jest.runAllTimers();
@@ -325,61 +367,69 @@ describe("Debounce option", () => {
     store.z.undo();
     jest.runAllTimers();
 
-    expect(get(store).name).toEqual("second");
+    expect(current.name).toEqual("second");
   });
 });
 
 describe("Rest hook unit test suite", () => {
   it("Gets the content with params", async () => {
     const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+    let current;
     const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
+    store.subscribe(newVal => (current = newVal));
 
     await store.z.load({ name: "test" });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users?name=test");
-    expect(get(store)).toEqual([1, 2, 3]);
+    expect(current).toEqual([1, 2, 3]);
   });
 
   it("Gets the content by id", async () => {
     const fetchImpl = jest.fn(() => ({
       json: () => ({ name: "test", id: 123 })
     }));
+    let current;
     const store = sut([], {
       rest: { endpoint: "/api/users", fetchImpl }
     });
+    store.subscribe(newVal => (current = newVal));
 
     await store.z.load({ id: 123 });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/123");
-    expect(get(store)).toEqual({ name: "test", id: 123 });
+    expect(current).toEqual({ name: "test", id: 123 });
   });
 
   it("Gets the content by id with custom id param", async () => {
     const fetchImpl = jest.fn(() => ({
       json: () => ({ name: "test", idParam: 123 })
     }));
+    let current;
     const store = sut([], {
       rest: { endpoint: "/api/users", fetchImpl, idParam: "idParam" }
     });
+    store.subscribe(newVal => (current = newVal));
 
     await store.z.load({ idParam: 123 });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/123");
-    expect(get(store)).toEqual({ name: "test", idParam: 123 });
+    expect(current).toEqual({ name: "test", idParam: 123 });
   });
 
   it("Gets the content without params", async () => {
     const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+    let current;
     const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
+    store.subscribe(newVal => (current = newVal));
 
     await store.z.load();
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users");
-    expect(get(store)).toEqual([1, 2, 3]);
+    expect(current).toEqual([1, 2, 3]);
   });
 
   it("Calls the post method for a new object in an array", () => {
