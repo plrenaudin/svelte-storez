@@ -30,6 +30,7 @@
     "@babel/core": "^7.8.7",
     "@babel/preset-env": "^7.8.7",
     "babel-jest": "^25.1.0",
+    "core-js": "^3.6.4",
     "eslint": "^6.8.0",
     "eslint-plugin-prettier": "^3.1.2",
     "husky": "^4.2.3",
@@ -53,7 +54,10 @@
   "babel": {
     "presets": [
       [
-        "@babel/preset-env"
+        "@babel/preset-env",
+        {
+          "targets": "chrome >75"
+        }
       ]
     ]
   }

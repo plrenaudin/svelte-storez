@@ -6,7 +6,7 @@
     "no-console":"warn"
   },
   "parserOptions": {
-    "ecmaVersion": 6,
+    "ecmaVersion": 9,
     "sourceType": "module"
   },
   "env": {

@@ -246,38 +246,47 @@ describe("Localstorage hoook unit test suite", () => {
 describe("History hook unit test suite", () => {
   it("Has a single item in history upon store creation", () => {
     const store = sut("first", { history: true });
+
     expect(get(store.z.history)).toEqual(["first"]);
   });
 
   it("Keeps changes in history", () => {
     const store = sut("first", { history: { size: 3 } });
+
     store.set("second");
     store.set("third");
+
     expect(get(store.z.history)).toEqual(["first", "second", "third"]);
   });
 
   it("Keeps the history size under limit", () => {
     const store = sut("first", { history: { size: 3 } });
+
     store.set("second");
     store.set("third");
     store.set("fourth");
+
     expect(get(store.z.history)).toEqual(["second", "third", "fourth"]);
   });
 
   it("Undoes the last change", () => {
     const store = sut("first", { history: true });
+
     store.set("coucou");
     store.z.undo();
+
     expect(get(store)).toEqual("first");
   });
 
   it("Undoes until the initial value", () => {
     const store = sut("first", { history: true });
+
     store.set("second");
     store.set("third");
     store.z.undo();
     store.z.undo();
     store.z.undo();
+
     expect(get(store)).toEqual("first");
   });
 });
@@ -317,5 +326,177 @@ describe("Debounce option", () => {
     jest.runAllTimers();
 
     expect(get(store).name).toEqual("second");
+  });
+});
+
+describe("Rest hook unit test suite", () => {
+  it("Gets the content with params", async () => {
+    const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+    const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
+
+    await store.z.load({ name: "test" });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users?name=test");
+    expect(get(store)).toEqual([1, 2, 3]);
+  });
+
+  it("Gets the content by id", async () => {
+    const fetchImpl = jest.fn(() => ({
+      json: () => ({ name: "test", id: 123 })
+    }));
+    const store = sut([], {
+      rest: { endpoint: "/api/users", fetchImpl }
+    });
+
+    await store.z.load({ id: 123 });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/123");
+    expect(get(store)).toEqual({ name: "test", id: 123 });
+  });
+
+  it("Gets the content by id with custom id param", async () => {
+    const fetchImpl = jest.fn(() => ({
+      json: () => ({ name: "test", idParam: 123 })
+    }));
+    const store = sut([], {
+      rest: { endpoint: "/api/users", fetchImpl, idParam: "idParam" }
+    });
+
+    await store.z.load({ idParam: 123 });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/123");
+    expect(get(store)).toEqual({ name: "test", idParam: 123 });
+  });
+
+  it("Gets the content without params", async () => {
+    const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+    const store = sut([], { rest: { endpoint: "/api/users", fetchImpl } });
+
+    await store.z.load();
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users");
+    expect(get(store)).toEqual([1, 2, 3]);
+  });
+
+  it("Calls the post method for a new object in an array", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => [1, 2, 3] }));
+
+    const store = sut([{ id: 1, name: "test" }], {
+      rest: { endpoint: "/api/users", fetchImpl }
+    });
+
+    store.update(n => n.concat({ name: "test2" }));
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "POST",
+      body: { name: "test2" }
+    });
+  });
+
+  it("Calls the put method for a change in the object property", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut([{ name: "test", id: 1 }], {
+      rest: { endpoint: "/api/users", fetchImpl }
+    });
+
+    store.set({ id: 1, name: "changedTest" });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/1");
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "changedTest", id: 1 }
+    });
+  });
+  it("Calls the put method for an object change in an array", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut(
+      [
+        { name: "test", id: 1 },
+        { name: "test2", id: 2 }
+      ],
+      {
+        rest: { endpoint: "/api/users", fetchImpl }
+      }
+    );
+
+    store.set([
+      { name: "testChanged", id: 1 },
+      { name: "test2", id: 2 }
+    ]);
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "testChanged", id: 1 }
+    });
+  });
+  it("Logs multiple calls for a serie of changes", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut(
+      [
+        { name: "test", id: 1 },
+        { name: "test2", id: 2 },
+        { name: "testToDelete", id: 3 }
+      ],
+      {
+        rest: { endpoint: "/api/users", fetchImpl }
+      }
+    );
+
+    store.set([
+      { name: "testChanged", id: 1 },
+      { name: "test2", id: 2 },
+      { name: "newOne" }
+    ]);
+
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    // POST
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "POST",
+      body: { name: "newOne" }
+    });
+    //PUT
+    expect(fetchImpl.mock.calls[1][0]).toEqual("/api/users/1");
+    expect(fetchImpl.mock.calls[1][1]).toEqual({
+      method: "PUT",
+      body: { name: "testChanged", id: 1 }
+    });
+    //DELETE
+    expect(fetchImpl.mock.calls[2][0]).toEqual("/api/users/3");
+    expect(fetchImpl.mock.calls[2][1]).toEqual({
+      method: "DELETE"
+    });
+  });
+  it("calls the fetchImpl with additional params provided", () => {
+    const fetchImpl = jest.fn(() => ({ json: () => {} }));
+
+    const store = sut([{ name: "test", id: 1 }], {
+      rest: {
+        endpoint: "/api/users",
+        fetchImpl,
+        fetchParams: { headers: { auth: "my custom auth" } }
+      }
+    });
+
+    store.set({ id: 1, name: "changedTest" });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+
+    expect(fetchImpl.mock.calls[0][0]).toEqual("/api/users/1");
+    expect(fetchImpl.mock.calls[0][1]).toEqual({
+      method: "PUT",
+      body: { name: "changedTest", id: 1 },
+      headers: { auth: "my custom auth" }
+    });
   });
 });

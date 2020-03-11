@@ -94,9 +94,17 @@ storez(val, start, options);
 const instance = storez("initial", ...);
 instance.set("newValue");
 instance.set("wrongValue");
+
+// If History module enabled:
 instance.z.history; // History module: Svelte readable store containing the state history
 instance.z.undo(); // History module: undo last mutation
 // Here: instance === newValue
+
+// If rest module enabled:
+instance.z.load({label: "test"}); // Rest module: Load entries from the API config if enabled
+// Here for example intance === [{name: "tester1", label:"test", id:1}, {name: "tester2", label:"test", id:2}]
+$instance = [...$instance, {name:"another", label: "test"}]; // triggers a POST to API endpoint with {name:"another", label: "test"} as payload
+
 ```
 
 ## Options
