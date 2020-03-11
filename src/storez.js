@@ -1,7 +1,6 @@
 import { writable } from "svelte/store";
 import localstorageHook from "./withLocalstorage";
 import historyHook from "./withHistory";
-import restHook from "./withRest";
 import { debounce } from "./utils";
 
 /**
@@ -14,22 +13,14 @@ import { debounce } from "./utils";
  *
  * @typedef {Object} StorezExtra
  * @property {SvelteDerivedStore} history Returns history of the past values of the store
- * @property {(params:Object) => Promise<[]>} load Load initial set of data if using the REST module
  * @property {Number} debounce Interval in ms between 2 stores updates
  *
  * @typedef {Object} Options
  * @property {LocalStorageOptions} localstorage Localstorage options
  * @property {HistoryOptions} history History options
- * @property {RestOptions} rest Rest options
  *
  * @typedef {Object} LocalStorageOptions
  * @property {String} key Key used for the local storage
- *
- * @typedef {Object} RestOptions
- * @property {String} endpoint URL of the rest API endpoint (e.g. /api/users)
- * @property {String} [idParam="id"] Name of the identifier param (most of the time and default = "id")
- * @property {FetchFn} [fetchImpl=window.fetch] Fetch compatible implementation to use (default = window.fetch)
- * @property {Object} fetchParams Fetch compatible parameters to pass to the fetching function
  *
  * @typedef {Object} HistoryOptions
  * @property {Number} [size=50] Number of mutations to keep in history
@@ -73,8 +64,7 @@ const storezImpl = (val, start, options) => {
 
   const hooks = [
     options.localstorage && localstorageHook(options),
-    options.history && historyHook(options),
-    options.rest && restHook(options)
+    options.history && historyHook(options)
   ].filter(Boolean);
 
   const runHooks = (fnName, ...args) =>
