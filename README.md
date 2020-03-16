@@ -1,5 +1,8 @@
 # Storez
 
+<img src="https://img.shields.io/bundlephobia/minzip/storez" />
+<img src="https://img.shields.io/david/dev/plrenaudin/svelte-storez" />
+
 ## Svelte writable store with extra feature
 
 - Fully compatible with svelte writable store
@@ -7,6 +10,12 @@
 - Read and persist value to localstorage
 - Keep previous values in history (easy undo/redo coming soon...)
 - Write operation debouncing
+
+## Installation
+
+```
+npm install storez
+```
 
 ## Usage example
 
