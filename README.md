@@ -5,11 +5,12 @@
 
 ## Svelte writable store with extra feature
 
-- Fully compatible with svelte writable store
-- Subscriber function receives the new and the old value
+- **Fully compatible** with svelte writable store
+- Subscriber function receives the new **and the old value**
 - Read and persist value to localstorage
-- Keep previous values in history (easy undo/redo coming soon...)
-- Write operation debouncing
+- Keep previous values in **history** (**undo** store mutation with `undo()`)
+- Write operation **debouncing**
+- Get current value without having to subscribe or use `svelte/store` **get** method
 
 ## Installation
 
@@ -19,7 +20,7 @@ npm install storez
 
 ## Usage example
 
-Most of the use cases are covered in this sandbox: https://codesandbox.io/s/storez-demo-c11v9
+Check out the [Demo](https://codesandbox.io/s/storez-demo-c11v9)
 
 ### Basic example
 
@@ -61,6 +62,11 @@ import storez from "storez";
 export const store = storez("my value", { history: { size: 1000 } });
 
 store.set("changed value");
+
+store.set("another value");
+
+// Undo last mutation:
+store.z.undo();
 ```
 
 In the Svelte file:
@@ -81,6 +87,7 @@ In the Svelte file:
   <li>{item}</li>
   {/each}
 </ul>
+<button on:click="{store.z.undo}">Undo</button>
 ```
 
 ## API
@@ -103,6 +110,8 @@ storez(val, start, options);
 const instance = storez("initial", ...);
 instance.set("newValue");
 instance.set("wrongValue");
+
+instance.z.get() // returns the current value of the store (e.g. "wrongValue") This value is not reactive
 
 // If History module enabled:
 instance.z.history; // History module: Svelte readable store containing the state history

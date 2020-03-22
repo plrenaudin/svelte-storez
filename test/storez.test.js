@@ -223,6 +223,15 @@ describe("'Subscribe' method unit test suite", () => {
     expect(current).toEqual("value changed");
     dispose();
   });
+  it("Should update the current value", () => {
+    const store = sut("initialValue");
+
+    expect(store.z.get()).toEqual("initialValue");
+
+    store.set("changed value");
+
+    expect(store.z.get()).toEqual("changed value");
+  });
 });
 
 describe("Localstorage hoook unit test suite", () => {

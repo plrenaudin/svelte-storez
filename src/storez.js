@@ -14,6 +14,7 @@ import { debounce } from "./utils";
  * @typedef {Object} StorezExtra
  * @property {SvelteDerivedStore} history Returns history of the past values of the store
  * @property {Number} debounce Interval in ms between 2 stores updates
+ * @property {() => any} get Get current value (not reactive)
  *
  * @typedef {Object} Options
  * @property {LocalStorageOptions} localstorage Localstorage options
@@ -95,7 +96,7 @@ const storezImpl = (val, start, options) => {
 
   const z = hooks.reduce(
     (acc, cur) => (cur.exports ? Object.assign(acc, cur.exports) : acc),
-    {}
+    { get: () => currentValue }
   );
 
   return {
