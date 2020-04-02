@@ -174,7 +174,7 @@ describe("'Subscribe' method unit test suite", () => {
     const spy2 = jest.fn();
 
     const unsubscribe1 = store.subscribe(spy1);
-    store.subscribe(spy2);
+    const unsubscribe2 = store.subscribe(spy2);
     store.set("changed");
     unsubscribe1();
     store.set("changedAgainValue");
@@ -204,6 +204,22 @@ describe("'Subscribe' method unit test suite", () => {
         ],
       ]
     `);
+    unsubscribe2();
+  });
+  it("should resubscribe the value store if subscriptions goes to 0 twice", () => {
+    const store = sut("initialValue");
+    const dispose = store.subscribe(() => {});
+    let caught = false;
+
+    dispose();
+
+    const dispose2 = store.subscribe(() => {});
+    try {
+      dispose2();
+    } catch (e) {
+      caught = true;
+    }
+    expect(caught).toBe(false);
   });
   it("Debounces write operation", () => {
     jest.useFakeTimers();

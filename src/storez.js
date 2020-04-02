@@ -61,6 +61,8 @@ const storez = (...args) => {
 const storezImpl = (val, start, options) => {
   let oldValue;
   let currentValue = val;
+  let dispose;
+  let subscribedToValueStore = false;
   const subscriptions = [];
 
   const hooks = [
@@ -86,13 +88,18 @@ const storezImpl = (val, start, options) => {
     setter(fn(currentValue));
   };
 
+  const subscribeValueStore = () => {
+    subscribedToValueStore = true;
+    return valueStore.subscribe(newVal => {
+      oldValue = currentValue;
+      currentValue = newVal;
+      runHooks("onNewVal", newVal, oldValue);
+    });
+  };
+
   runHooks("onStoreInit", setter);
 
-  const dispose = valueStore.subscribe(newVal => {
-    oldValue = currentValue;
-    currentValue = newVal;
-    runHooks("onNewVal", newVal, oldValue);
-  });
+  dispose = subscribeValueStore();
 
   const z = hooks.reduce(
     (acc, cur) => (cur.exports ? Object.assign(acc, cur.exports) : acc),
@@ -101,6 +108,9 @@ const storezImpl = (val, start, options) => {
 
   return {
     subscribe: subscriptionFn => {
+      if (!subscriptions.length && !subscribedToValueStore) {
+        dispose = subscribeValueStore();
+      }
       subscriptions.push(subscriptionFn);
       subscriptionFn(currentValue);
       return () => {
@@ -112,6 +122,7 @@ const storezImpl = (val, start, options) => {
           //dispose
           runHooks("onDispose", currentValue);
           dispose();
+          subscribedToValueStore = false;
         }
       };
     },
