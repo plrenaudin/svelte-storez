@@ -283,6 +283,29 @@ describe("Localstorage hoook unit test suite", () => {
     expect(localStorage.getItem("lsKey")).toEqual("anotherVal");
   });
 
+  it("Saves to localstorage at every disposal", () => {
+    localStorage.clear();
+    const store = sut("value", { localstorage: { key: "lsKey" } });
+
+    expect(localStorage.getItem("lsKey")).toEqual("value");
+    const dispose = store.subscribe(() => {});
+    const dispose2 = store.subscribe(() => {});
+    store.set("anotherVal");
+
+    // Does not save to localstorage until store is disposed
+    expect(localStorage.getItem("lsKey")).toEqual("value");
+    dispose();
+
+    expect(localStorage.getItem("lsKey")).toEqual("anotherVal");
+
+    // Does update localstorage between every disposal
+    store.set("lastVal");
+    expect(localStorage.getItem("lsKey")).toEqual("anotherVal");
+    dispose2();
+
+    expect(localStorage.getItem("lsKey")).toEqual("lastVal");
+  });
+
   it("Saves to localstorage as an object", () => {
     localStorage.clear();
     const store = sut({ name: "value" }, { localstorage: { key: "lsKey" } });
