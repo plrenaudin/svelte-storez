@@ -119,7 +119,7 @@ const storezImpl = (val, start, options) => {
           subscriptions.splice(index, 1);
         }
         runHooks("onDispose", currentValue);
-        if (subscriptions.length === 0) {
+        if (subscriptions.length === 0 && subscribedToValueStore) {
           //dispose
           dispose();
           subscribedToValueStore = false;

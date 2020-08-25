@@ -221,6 +221,21 @@ describe("'Subscribe' method unit test suite", () => {
     }
     expect(caught).toBe(false);
   });
+  it("should not error out on double disposal", () => {
+    const store = sut("initialValue");
+    const dispose = store.subscribe(() => {});
+    let caught = false;
+
+    dispose();
+
+    try {
+      dispose();
+    } catch (e) {
+      console.log(e);
+      caught = true;
+    }
+    expect(caught).toBe(false);
+  });
   it("Debounces write operation", () => {
     jest.useFakeTimers();
     const store = sut("value", { debounce: 5000 });
