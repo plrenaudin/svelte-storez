@@ -24,18 +24,18 @@
   },
   "license": "ISC",
   "dependencies": {
-    "svelte": "^3.24.1"
+    "svelte": "^3.38.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.11.1",
-    "@babel/preset-env": "^7.11.0",
-    "babel-jest": "^26.2.2",
-    "core-js": "^3.6.5",
-    "eslint": "^7.6.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "husky": "^4.2.5",
-    "jest": "^26.2.2",
-    "lint-staged": "^10.2.11",
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.1",
+    "babel-jest": "^26.6.3",
+    "core-js": "^3.12.1",
+    "eslint": "^7.26.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^4.3.8",
+    "jest": "^26.6.3",
+    "lint-staged": "^10.5.4",
     "prettier": "1.19.1"
   },
   "husky": {
