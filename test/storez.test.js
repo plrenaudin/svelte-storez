@@ -379,6 +379,49 @@ describe("History hook unit test suite", () => {
     expect(current).toEqual("first");
   });
 
+  it("Redoes the undone change", () => {
+    const store = sut("first", { history: true });
+    let current;
+    store.subscribe(newVal => (current = newVal));
+
+    store.set("second");
+    store.set("third");
+    store.z.undo();
+    store.z.undo();
+    store.z.undo();
+    store.z.redo();
+
+    expect(current).toEqual("second");
+
+    store.z.redo();
+
+    expect(current).toEqual("third");
+
+    store.z.redo();
+
+    expect(current).toEqual("third");
+  });
+
+  it("Adding entries to the store empties the redo stack", () => {
+    const store = sut("first", { history: true });
+    let current;
+    store.subscribe(newVal => (current = newVal));
+
+    store.set("second");
+    store.set("third");
+    store.z.undo();
+
+    expect(current).toEqual("second");
+
+    store.set("newEntry");
+
+    expect(current).toEqual("newEntry");
+
+    store.z.redo();
+
+    expect(current).toEqual("newEntry");
+  });
+
   it("Undoes until the initial value", () => {
     const store = sut("first", { history: true });
     let current;

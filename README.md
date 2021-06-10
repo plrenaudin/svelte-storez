@@ -117,6 +117,8 @@ instance.z.get() // returns the current value of the store (e.g. "wrongValue") T
 instance.z.history; // History module: Svelte readable store containing the state history
 instance.z.undo(); // History module: undo last mutation
 // Here: instance === newValue
+instance.z.redo();
+// Here: instance === wrongValue
 
 
 ```
