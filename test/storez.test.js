@@ -402,6 +402,32 @@ describe("History hook unit test suite", () => {
     expect(current).toEqual("third");
   });
 
+  it("Adding entries to the store empties the redo stack with objects", () => {
+    const store = sut({ parent: { child: "nested" } }, { history: true });
+    let current;
+    store.subscribe(newVal => (current = newVal));
+
+    store.update(value => {
+      value.parent.child = "nested2";
+      return value;
+    });
+    store.update(value => {
+      value.parent.child = "nested3";
+      return value;
+    });
+    store.z.undo();
+
+    expect(current).toEqual({ parent: { child: "nested2" } });
+
+    store.set({ parent: { child: "nested_tmp" } });
+
+    expect(current).toEqual({ parent: { child: "nested_tmp" } });
+
+    store.z.redo();
+
+    expect(current).toEqual({ parent: { child: "nested_tmp" } });
+  });
+
   it("Adding entries to the store empties the redo stack", () => {
     const store = sut("first", { history: true });
     let current;

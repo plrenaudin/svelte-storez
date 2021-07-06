@@ -44,8 +44,12 @@ const historyHook = ({ history: { size = 50 } }) => {
   };
 
   const onNewVal = value => {
-    //if there is an undo, the store.set will triger subscriber so we need to skip history for the value
-    if (undoing && undoing.value === value) {
+    //if there is an undo, the store.set will triger subscriber so we need to
+    //skip history for the value
+
+    value = JSON.parse(JSON.stringify(value));
+
+    if (undoing && JSON.stringify(undoing.value) === JSON.stringify(value)) {
       undoing = false;
       return;
     }
