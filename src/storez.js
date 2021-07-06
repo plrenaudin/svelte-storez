@@ -91,8 +91,8 @@ const storezImpl = (val, start, options) => {
   const subscribeValueStore = () => {
     subscribedToValueStore = true;
     return valueStore.subscribe(newVal => {
-      oldValue = currentValue;
-      currentValue = newVal;
+      oldValue = JSON.parse(JSON.stringify(currentValue));
+      currentValue = JSON.parse(JSON.stringify(newVal));
       runHooks("onNewVal", newVal, oldValue);
     });
   };
