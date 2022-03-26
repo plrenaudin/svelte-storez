@@ -5,7 +5,7 @@ describe("'Set' method unit test suite", () => {
   it("Should save the string value on set", () => {
     let current;
     const store = sut("intialValue");
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set("changed value");
 
@@ -15,7 +15,7 @@ describe("'Set' method unit test suite", () => {
   it("Should save the object value on set", () => {
     let current;
     const store = sut({ name: "initial" });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set({ name: "changed" });
 
@@ -25,7 +25,7 @@ describe("'Set' method unit test suite", () => {
   it("Should save the array value on set", () => {
     let current;
     const store = sut([1, 2, 3, 4]);
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set([1, 2, 3]);
 
@@ -36,9 +36,9 @@ describe("'Set' method unit test suite", () => {
     let current;
     let current2;
     const store1 = sut("coucou");
-    store1.subscribe(newVal => (current = newVal));
+    store1.subscribe((newVal) => (current = newVal));
     const store2 = sut([1, 2, 3]);
-    store2.subscribe(newVal => (current2 = newVal));
+    store2.subscribe((newVal) => (current2 = newVal));
 
     store1.set("coucouChanged");
     store2.set([3, 2, 1]);
@@ -52,9 +52,9 @@ describe("'Update' method unit test suite", () => {
   it("Should save the string value on update", () => {
     let current;
     const store = sut("intialValue");
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
-    store.update(n => n + "Changed");
+    store.update((n) => n + "Changed");
 
     expect(current).toEqual("intialValueChanged");
   });
@@ -62,9 +62,9 @@ describe("'Update' method unit test suite", () => {
   it("Should save the object value on update", () => {
     let current;
     const store = sut({ name: "initial" });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
-    store.update(n => {
+    store.update((n) => {
       n.name += "Changed";
       return n;
     });
@@ -76,9 +76,9 @@ describe("'Update' method unit test suite", () => {
     const initial = [1, 2, 3];
     let current;
     const store = sut(initial);
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
-    store.update(n => n.concat(4));
+    store.update((n) => n.concat(4));
 
     expect(current).toEqual(initial.concat(4));
   });
@@ -104,7 +104,7 @@ describe("'Subscribe' method unit test suite", () => {
     const spy = jest.fn();
 
     store.subscribe(spy);
-    store.update(n => n + "Changed");
+    store.update((n) => n + "Changed");
 
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy.mock.calls[0][0]).toEqual("initialValue");
@@ -240,7 +240,7 @@ describe("'Subscribe' method unit test suite", () => {
     jest.useFakeTimers();
     const store = sut("value", { debounce: 5000 });
     let current;
-    const dispose = store.subscribe(value => (current = value));
+    const dispose = store.subscribe((value) => (current = value));
     store.set("value ");
     store.set("value c");
     store.set("value cha");
@@ -270,7 +270,7 @@ describe("Localstorage hoook unit test suite", () => {
     let current;
     localStorage.setItem("lsKey", "valueFromLS");
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     expect(current).toEqual("valueFromLS");
   });
@@ -279,7 +279,7 @@ describe("Localstorage hoook unit test suite", () => {
     let current;
     localStorage.setItem("lsKey", JSON.stringify({ value: "test" }));
     const store = sut("fallback", { localstorage: { key: "lsKey" } });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     expect(current).toEqual({ value: "test" });
   });
@@ -371,7 +371,7 @@ describe("History hook unit test suite", () => {
   it("Undoes the last change", () => {
     let current;
     const store = sut("first", { history: true });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set("coucou");
     store.z.undo();
@@ -382,7 +382,7 @@ describe("History hook unit test suite", () => {
   it("Redoes the undone change", () => {
     const store = sut("first", { history: true });
     let current;
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set("second");
     store.set("third");
@@ -405,13 +405,13 @@ describe("History hook unit test suite", () => {
   it("Adding entries to the store empties the redo stack with objects", () => {
     const store = sut({ parent: { child: "nested" } }, { history: true });
     let current;
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
-    store.update(value => {
+    store.update((value) => {
       value.parent.child = "nested2";
       return value;
     });
-    store.update(value => {
+    store.update((value) => {
       value.parent.child = "nested3";
       return value;
     });
@@ -431,7 +431,7 @@ describe("History hook unit test suite", () => {
   it("Adding entries to the store empties the redo stack", () => {
     const store = sut("first", { history: true });
     let current;
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set("second");
     store.set("third");
@@ -451,7 +451,7 @@ describe("History hook unit test suite", () => {
   it("Undoes until the initial value", () => {
     const store = sut("first", { history: true });
     let current;
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set("second");
     store.set("third");
@@ -467,7 +467,7 @@ describe("Debounce option", () => {
     jest.useFakeTimers();
     let current;
     const store = sut("first", { debounce: 200, history: true });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set("second");
     jest.runAllTimers();
@@ -486,7 +486,7 @@ describe("Debounce option", () => {
     jest.useFakeTimers();
     let current;
     const store = sut({ name: "first" }, { history: true, debounce: 200 });
-    store.subscribe(newVal => (current = newVal));
+    store.subscribe((newVal) => (current = newVal));
 
     store.set({ name: "second" });
     jest.runAllTimers();

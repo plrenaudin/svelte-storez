@@ -67,11 +67,11 @@ const storezImpl = (val, start, options) => {
 
   const hooks = [
     options.localstorage && localstorageHook(options),
-    options.history && historyHook(options)
+    options.history && historyHook(options),
   ].filter(Boolean);
 
   const runHooks = (fnName, ...args) =>
-    hooks.forEach(hook => hook[fnName] && hook[fnName](...args));
+    hooks.forEach((hook) => hook[fnName] && hook[fnName](...args));
   const processHooks = (fnName, ...args) =>
     hooks.reduce((acc, cur) => (cur[fnName] ? cur[fnName](acc) : acc), ...args);
 
@@ -79,18 +79,18 @@ const storezImpl = (val, start, options) => {
 
   const valueStore = writable(initialValue, start);
 
-  const setter = newVal => {
+  const setter = (newVal) => {
     valueStore.set(newVal);
-    subscriptions.forEach(sub => sub(currentValue, oldValue));
+    subscriptions.forEach((sub) => sub(currentValue, oldValue));
   };
 
-  const updater = fn => {
+  const updater = (fn) => {
     setter(fn(currentValue));
   };
 
   const subscribeValueStore = () => {
     subscribedToValueStore = true;
-    return valueStore.subscribe(newVal => {
+    return valueStore.subscribe((newVal) => {
       oldValue = JSON.parse(JSON.stringify(currentValue));
       currentValue = JSON.parse(JSON.stringify(newVal));
       runHooks("onNewVal", newVal, oldValue);
@@ -107,7 +107,7 @@ const storezImpl = (val, start, options) => {
   );
 
   return {
-    subscribe: subscriptionFn => {
+    subscribe: (subscriptionFn) => {
       if (!subscriptions.length && !subscribedToValueStore) {
         dispose = subscribeValueStore();
       }
@@ -131,7 +131,7 @@ const storezImpl = (val, start, options) => {
 
     update:
       options.debounce > 0 ? debounce(updater, options.debounce) : updater,
-    z
+    z,
   };
 };
 

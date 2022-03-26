@@ -6,15 +6,15 @@ const historyHook = ({ history: { size = 50 } }) => {
   let undoing;
   let setter;
 
-  const readableHistory = derived(history, $history => $history);
+  const readableHistory = derived(history, ($history) => $history);
 
-  const onStoreInit = valueStoreSetter => (setter = valueStoreSetter);
+  const onStoreInit = (valueStoreSetter) => (setter = valueStoreSetter);
   const undo = () => {
-    history.update(n => {
+    history.update((n) => {
       if (n.length <= 1) {
         return n;
       }
-      redoStack.update(redos => {
+      redoStack.update((redos) => {
         redos = [...redos, n.pop()];
         const newValue = n[n.length - 1];
         undoing = { value: newValue };
@@ -27,11 +27,11 @@ const historyHook = ({ history: { size = 50 } }) => {
   };
 
   const redo = () => {
-    redoStack.update(redos => {
+    redoStack.update((redos) => {
       if (redos.length <= 0) {
         return redos;
       }
-      history.update(undos => {
+      history.update((undos) => {
         undos = [...undos, redos.pop()];
         const newValue = undos[undos.length - 1];
         undoing = { value: newValue };
@@ -43,7 +43,7 @@ const historyHook = ({ history: { size = 50 } }) => {
     });
   };
 
-  const onNewVal = value => {
+  const onNewVal = (value) => {
     //if there is an undo, the store.set will triger subscriber so we need to
     //skip history for the value
 
@@ -54,7 +54,7 @@ const historyHook = ({ history: { size = 50 } }) => {
       return;
     }
     redoStack.set([]);
-    history.update(n => {
+    history.update((n) => {
       while (n.length >= size) {
         n.shift();
       }
@@ -68,8 +68,8 @@ const historyHook = ({ history: { size = 50 } }) => {
     exports: {
       history: readableHistory,
       undo,
-      redo
-    }
+      redo,
+    },
   };
 };
 

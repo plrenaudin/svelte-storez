@@ -1,7 +1,7 @@
 import { localStorageSerializer, readLocalStorage } from "./utils";
 
-const localstorageHook = options => ({
-  onInit: value => {
+const localstorageHook = (options) => ({
+  onInit: (value) => {
     const initialValue = readLocalStorage(options.localstorage.key);
     if (!initialValue) {
       localStorage.setItem(
@@ -12,12 +12,12 @@ const localstorageHook = options => ({
     return initialValue || value;
   },
 
-  onDispose: value => {
+  onDispose: (value) => {
     localStorage.setItem(
       options.localstorage.key,
       localStorageSerializer.to(value)
     );
-  }
+  },
 });
 
 export default localstorageHook;
