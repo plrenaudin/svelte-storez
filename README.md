@@ -1,7 +1,6 @@
 # Storez
 
 <img src="https://img.shields.io/bundlephobia/minzip/storez" />
-<img src="https://img.shields.io/david/plrenaudin/svelte-storez" />
 
 ## Svelte writable store with extra feature
 
