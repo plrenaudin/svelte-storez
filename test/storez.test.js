@@ -1,3 +1,5 @@
+import { jest } from "@jest/globals";
+
 import { get } from "svelte/store";
 import sut from "../src/storez";
 
@@ -179,26 +181,26 @@ describe("'Subscribe' method unit test suite", () => {
     unsubscribe1();
     store.set("changedAgainValue");
     expect(spy1.mock.calls).toMatchInlineSnapshot(`
-      Array [
-        Array [
+      [
+        [
           "initialValue",
         ],
-        Array [
+        [
           "changed",
           "initialValue",
         ],
       ]
     `);
     expect(spy2.mock.calls).toMatchInlineSnapshot(`
-      Array [
-        Array [
+      [
+        [
           "initialValue",
         ],
-        Array [
+        [
           "changed",
           "initialValue",
         ],
-        Array [
+        [
           "changedAgainValue",
           "changed",
         ],
@@ -231,7 +233,6 @@ describe("'Subscribe' method unit test suite", () => {
     try {
       dispose();
     } catch (e) {
-      console.log(e);
       caught = true;
     }
     expect(caught).toBe(false);
